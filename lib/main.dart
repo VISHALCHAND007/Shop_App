@@ -25,6 +25,7 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           fontFamily: "Lato",
           primarySwatch: Colors.lime,
+          primaryColor: Colors.red
         ),
         routes: {
           "/": (ctx) => ProductOverviewScreen(),

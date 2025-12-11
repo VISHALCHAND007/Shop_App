@@ -21,10 +21,13 @@ class GridItem extends StatelessWidget {
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
       ),
-      itemBuilder: (ctx, ind) => ProductItem(
-        id: products[ind].id,
-        title: products[ind].title,
-        imageUrl: products[ind].imageUrl,
+      itemBuilder: (ctx, ind) => ChangeNotifierProvider.value(
+        value: products[ind],
+        child: ProductItem(
+          // id: products[ind].id,
+          // title: products[ind].title,
+          // imageUrl: products[ind].imageUrl,
+        ),
       ),
     );
   }
