@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/widgets/custom_drawer.dart';
 import './cart_screen.dart';
 import '../provider/cart_provider.dart';
 
@@ -27,13 +28,14 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
             builder: (_, cart, child) => Badge(
               isLabelVisible: true,
               label: Text(cart.getSize.toString()),
+              offset: Offset(-3, 0),
               child: child,
             ),
             child: IconButton(
               onPressed: () {
                 Navigator.of(context).pushNamed(CartScreen.routeName);
               },
-              icon: Icon(Icons.shopping_cart),
+              icon: Icon(Icons.shopping_cart,),
             ),
           ),
           PopupMenuButton(
@@ -57,6 +59,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
           ),
         ],
       ),
+      drawer: Drawer(child: CustomDrawer(),),
       body: GridItem(showOnlyFavourites: showOnlyFavourites),
     );
   }

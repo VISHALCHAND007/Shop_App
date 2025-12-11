@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_app/provider/cart_provider.dart' show CartProvider;
-import 'package:shop_app/widgets/cart_item.dart';
+import '../provider/cart_provider.dart' show CartProvider;
+import '../provider/order_provider.dart';
+import '../widgets/cart_item.dart';
+import '../widgets/not_found.dart';
 
 class CartScreen extends StatelessWidget {
   static final routeName = "/cart";
@@ -16,17 +18,9 @@ class CartScreen extends StatelessWidget {
       appBar: AppBar(title: Text("Your Cart")),
       body: cartProvider.getSize > 0
           ? buildCardUI(cartProvider, context)
-          : Center(
-              child: Column(
-                mainAxisAlignment: .center,
-                children: [
-                  Icon(Icons.shopping_cart, size: 60,),
-                  Text(
-                    "Your cart is empty!",
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ],
-              ),
+          : NotFound(
+              icon: Icons.shopping_cart_outlined,
+              title: "Your cart is empty!",
             ),
     );
   }
@@ -44,7 +38,7 @@ class CartScreen extends StatelessWidget {
                 Spacer(),
                 Chip(
                   label: Text(
-                    "₹${cartProvider.orderTotal}",
+                    "₹${cartProvider.orderTotal.toStringAsFixed(2)}",
                     style: TextStyle(
                       color: Theme.of(
                         context,
@@ -57,7 +51,14 @@ class CartScreen extends StatelessWidget {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Provider.of<OrderProvider>(context, listen: false).addOrder(
+                      cartProvider.orderTotal,
+                      cartProvider.getItems.values.toList(),
+                    );
+                    //clearing the cart after order
+                    cartProvider.clearCart();
+                  },
                   child: Text(
                     "Order Now",
                     style: TextStyle(color: Colors.green, fontSize: 16),

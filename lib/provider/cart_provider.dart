@@ -17,7 +17,7 @@ class CartItem {
 }
 
 class CartProvider with ChangeNotifier {
-  final Map<String, CartItem> _cartItems = {};
+  Map<String, CartItem> _cartItems = {};
 
   Map<String, CartItem> get getItems {
     return {..._cartItems};
@@ -60,11 +60,16 @@ class CartProvider with ChangeNotifier {
     return _cartItems.length;
   }
 
-  String get orderTotal {
+  double get orderTotal {
     var total = 0.0;
     _cartItems.forEach((productId, cartItem) {
       total += cartItem.quantity * cartItem.price;
     });
-    return total.toStringAsFixed(2);
+    return total;
+  }
+
+  void clearCart() {
+    _cartItems = {};
+    notifyListeners();
   }
 }
