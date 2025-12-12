@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shop_app/screens/order_screen.dart';
+import 'package:shop_app/screens/user_products_screen.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
@@ -24,6 +25,10 @@ class CustomDrawer extends StatelessWidget {
                 Container(margin: const EdgeInsets.only(left: 60),child: Divider()),
                 buildListTile(Icons.bookmark_border_rounded, "Orders", () {
                   Navigator.of(context).pushReplacementNamed(OrderScreen.routeName);
+                }),
+                Container(margin: const EdgeInsets.only(left: 60),child: Divider()),
+                buildListTile(Icons.edit, "Manage Products", () {
+                  Navigator.of(context).pushReplacementNamed(UserProductsScreen.routeName);
                 }),
                 Container(margin: const EdgeInsets.only(left: 60),child: Divider()),
               ],
