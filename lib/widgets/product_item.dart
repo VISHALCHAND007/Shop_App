@@ -40,12 +40,7 @@ class ProductItem extends StatelessWidget {
           ),
           trailing: IconButton(
             onPressed: () {
-              cart.addItem(
-                product.id,
-                product.imageUrl,
-                product.title,
-                product.price,
-              );
+              handleCartClick(cart, product, ScaffoldMessenger.of(context));
             },
             icon: Icon(Icons.shopping_cart),
             color: cart.getItems.containsKey(product.id)
@@ -59,6 +54,26 @@ class ProductItem extends StatelessWidget {
           ).pushNamed(ProductDetailsScreen.routeName, arguments: product.id),
           child: Image.network(product.imageUrl, fit: BoxFit.cover),
         ),
+      ),
+    );
+  }
+
+  void handleCartClick(
+    CartProvider cart,
+    Product product,
+    ScaffoldMessengerState scaffoldMessenger,
+  ) {
+    cart.addItem(product.id, product.imageUrl, product.title, product.price);
+    scaffoldMessenger.hideCurrentSnackBar();
+    scaffoldMessenger.showSnackBar(
+      SnackBar(
+        content: Text("${product.title} added to cart"),
+        // duration: Duration(seconds: 2),
+        action: SnackBarAction(
+          label: "Remove",
+          onPressed: () => cart.removeSingleItem(product.id),
+        ),
+        showCloseIcon: true,
       ),
     );
   }
