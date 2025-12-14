@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:shop_app/models/temp_product.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import '../models/temp_product.dart';
 import 'product.dart';
 
 class ProductsProvider with ChangeNotifier {
@@ -84,17 +87,33 @@ class ProductsProvider with ChangeNotifier {
     return _products.firstWhere((product) => product.id == productId);
   }
 
-  void addProduct(TempProduct product) {
-    var newProduct = Product(
-      id: DateTime.now().millisecond.toString(),
-      title: product.title,
-      description: product.description,
-      price: product.price,
-      imageUrl: product.imageUrl,
-    );
-    _products.add(newProduct);
-    // do add product
-    notifyListeners();
+  Future<void> addProduct(TempProduct product) {
+    const url =
+        "https://shop-app-a8b3b-default-rtdb.firebaseio.com/products.json";
+
+    return http
+        .post(
+          Uri.parse(url),
+          body: json.encode({
+            "title": product.title,
+            "description": product.description,
+            "price": product.price,
+            "imageUrl": product.imageUrl,
+            "is_favourite": product.isFavourite,
+          }),
+        )
+        .then((response) {
+          var newProduct = Product(
+            id: json.decode(response.body)["name"],
+            title: product.title,
+            description: product.description,
+            price: product.price,
+            imageUrl: product.imageUrl,
+          );
+          _products.add(newProduct);
+          // do add product
+          notifyListeners();
+        });
   }
 
   void updateProduct(TempProduct product, String productId) {
