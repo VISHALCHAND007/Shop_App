@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/provider/products_provider.dart';
 import 'package:shop_app/widgets/custom_drawer.dart';
 import './cart_screen.dart';
 import '../provider/cart_provider.dart';
@@ -17,6 +18,24 @@ class ProductOverviewScreen extends StatefulWidget {
 
 class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   var showOnlyFavourites = false;
+  var _init = false;
+  var isLoading = false;
+
+  @override
+  void didChangeDependencies() {
+    if (!_init) {
+      _init = true;
+      setState(() {
+        isLoading = true;
+      });
+      Provider.of<ProductsProvider>(context).fetchAndSaveProducts().then((_) {
+        setState(() {
+          isLoading = false;
+        });
+      });
+    }
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +54,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
               onPressed: () {
                 Navigator.of(context).pushNamed(CartScreen.routeName);
               },
-              icon: Icon(Icons.shopping_cart,),
+              icon: Icon(Icons.shopping_cart),
             ),
           ),
           PopupMenuButton(
@@ -59,8 +78,10 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
           ),
         ],
       ),
-      drawer: Drawer(child: CustomDrawer(),),
-      body: GridItem(showOnlyFavourites: showOnlyFavourites),
+      drawer: Drawer(child: CustomDrawer()),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : GridItem(showOnlyFavourites: showOnlyFavourites),
     );
   }
 }

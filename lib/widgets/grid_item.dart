@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/widgets/not_found.dart';
 
 import '../provider/products_provider.dart';
 import 'product_item.dart';
@@ -17,7 +18,7 @@ class GridItem extends StatelessWidget {
         : productProvider.getProducts;
 
 
-    return GridView.builder(
+    return products.isNotEmpty ?GridView.builder(
       padding: const EdgeInsets.all(10.0),
       itemCount: products.length,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -34,6 +35,6 @@ class GridItem extends StatelessWidget {
           // imageUrl: products[ind].imageUrl,
         ),
       ),
-    );
+    ): NotFound(icon: Icons.delete_outline, title: "No products are found.");
   }
 }
