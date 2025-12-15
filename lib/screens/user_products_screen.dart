@@ -5,10 +5,19 @@ import 'package:shop_app/screens/edit_product_screen.dart';
 import 'package:shop_app/widgets/custom_drawer.dart';
 import 'package:shop_app/widgets/not_found.dart';
 
-class UserProductsScreen extends StatelessWidget {
+class UserProductsScreen extends StatefulWidget {
   static final routeName = "/user-products";
 
   const UserProductsScreen({super.key});
+
+  @override
+  State<UserProductsScreen> createState() => _UserProductsScreenState();
+}
+
+class _UserProductsScreenState extends State<UserProductsScreen> {
+  Future<void> _refreshProducts(BuildContext context) async {
+    await Provider.of<ProductsProvider>(context, listen: false).fetchAndSaveProducts();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,16 +26,19 @@ class UserProductsScreen extends StatelessWidget {
       appBar: AppBar(title: Text("Your Products")),
       drawer: Drawer(child: CustomDrawer()),
       body: products.isNotEmpty
-          ? Padding(
-              padding: const EdgeInsets.all(8),
-              child: ListView.builder(
-                itemBuilder: (ctx, ind) => ProductItem(
-                  productId: products[ind].id,
-                  price: products[ind].price.toString(),
-                  title: products[ind].title,
-                  imageUrl: products[ind].imageUrl,
+          ? RefreshIndicator(
+              onRefresh: () => _refreshProducts(context),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: ListView.builder(
+                  itemBuilder: (ctx, ind) => ProductItem(
+                    productId: products[ind].id,
+                    price: products[ind].price.toString(),
+                    title: products[ind].title,
+                    imageUrl: products[ind].imageUrl,
+                  ),
+                  itemCount: products.length,
                 ),
-                itemCount: products.length,
               ),
             )
           : NotFound(icon: Icons.not_interested_sharp, title: "Not found!"),
@@ -56,16 +68,22 @@ class ProductItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     return ListTile(
-      leading: CircleAvatar(backgroundImage: NetworkImage(imageUrl), radius: 25,),
-      title: Text(title, style: TextStyle(fontSize: 18),),
+      leading: CircleAvatar(
+        backgroundImage: NetworkImage(imageUrl),
+        radius: 25,
+      ),
+      title: Text(title, style: TextStyle(fontSize: 18)),
       subtitle: Text("Price: ₹$price"),
       trailing: Row(
         mainAxisSize: .min,
         children: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pushNamed(EditProductScreen.routeName, arguments: productId);
+              Navigator.of(
+                context,
+              ).pushNamed(EditProductScreen.routeName, arguments: productId);
             },
             child: Icon(
               Icons.edit,
@@ -74,8 +92,22 @@ class ProductItem extends StatelessWidget {
             ),
           ),
           TextButton(
-            onPressed: () {
-              Provider.of<ProductsProvider>(context, listen: false).deleteProd(productId);
+            onPressed: () async {
+              try {
+                await Provider.of<ProductsProvider>(
+                  context,
+                  listen: false,
+                ).deleteProd(productId);
+              } catch (error) {
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      error.toString(),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              }
             },
             child: Icon(
               Icons.delete,
