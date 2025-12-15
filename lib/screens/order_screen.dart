@@ -38,7 +38,7 @@ class OrderScreen extends StatelessWidget {
               );
             } else {
               //error handling
-              print(dataSnapshot.error.toString());
+              // print(dataSnapshot.error.toString());
               return const Text("Error occurred");
             }
           }

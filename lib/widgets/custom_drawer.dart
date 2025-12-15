@@ -20,15 +20,18 @@ class CustomDrawer extends StatelessWidget {
             child: ListView(
               children: [
                 buildListTile(Icons.home, "Home", () {
-                  Navigator.of(context).pushReplacementNamed("/");
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamedAndRemoveUntil("/", (route) => false);
                 }),
                 Container(margin: const EdgeInsets.only(left: 60),child: Divider()),
                 buildListTile(Icons.bookmark_border_rounded, "Orders", () {
-                  Navigator.of(context).pushReplacementNamed(OrderScreen.routeName);
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed(OrderScreen.routeName);
                 }),
                 Container(margin: const EdgeInsets.only(left: 60),child: Divider()),
                 buildListTile(Icons.edit, "Manage Products", () {
-                  Navigator.of(context).pushReplacementNamed(UserProductsScreen.routeName);
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushNamed(UserProductsScreen.routeName);
                 }),
                 Container(margin: const EdgeInsets.only(left: 60),child: Divider()),
               ],
