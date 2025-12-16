@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/screens/auth_screen.dart';
 import 'package:shop_app/screens/edit_product_screen.dart';
 import 'package:shop_app/screens/order_screen.dart';
 import 'package:shop_app/screens/user_products_screen.dart';
@@ -34,10 +35,11 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           fontFamily: "Lato",
           primarySwatch: Colors.lime,
-          primaryColor: Colors.red,
+          primaryColor: Colors.lightBlue,
         ),
+        home: AuthScreen(),
         routes: {
-          "/": (ctx) => ProductOverviewScreen(),
+          // "/": (ctx) => ProductOverviewScreen(),
           ProductDetailsScreen.routeName: (ctx) => ProductDetailsScreen(),
           CartScreen.routeName: (ctx) => CartScreen(),
           OrderScreen.routeName: (ctx) => OrderScreen(),
