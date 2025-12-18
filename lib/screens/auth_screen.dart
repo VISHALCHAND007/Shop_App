@@ -1,5 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '/provider/auth_provider.dart';
 
 enum AuthMode { signup, login }
 
@@ -11,6 +13,7 @@ class AuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.of(context).size;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -40,36 +43,34 @@ class AuthScreen extends StatelessWidget {
                     angle: -8 * pi / 180,
                     child: Transform.translate(
                       offset: const Offset(0.0, 0.0),
-                      child: Flexible(
-                        child: Container(
-                          width: deviceSize.width * 1.2,
-                          margin: const EdgeInsets.only(bottom: 60),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8,
-                            // horizontal: 94,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.white70,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black26,
-                                blurRadius: 8,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            "Shopify",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Theme.of(
-                                context,
-                              ).textTheme.titleLarge?.color,
-                              fontSize: 30,
-                              fontFamily: "Anton",
-                              fontWeight: FontWeight.normal,
+                      child: Container(
+                        width: deviceSize.width * 1.2,
+                        margin: const EdgeInsets.only(bottom: 60),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          // horizontal: 94,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.white70,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
                             ),
+                          ],
+                        ),
+                        child: Text(
+                          "Shopify",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).textTheme.titleLarge?.color,
+                            fontSize: 30,
+                            fontFamily: "Anton",
+                            fontWeight: FontWeight.normal,
                           ),
                         ),
                       ),
@@ -103,7 +104,7 @@ class _AuthCardState extends State<AuthCard> {
   var isLoading = false;
   final _passwordController = TextEditingController();
 
-  void _submit() {
+  void _submit(AuthProvider authProvider) async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -115,6 +116,7 @@ class _AuthCardState extends State<AuthCard> {
       // login process
     } else {
       //sign up process
+      await authProvider.signUp(_authData["email"]!, _authData["password"]!);
     }
     setState(() {
       isLoading = false;
@@ -136,6 +138,8 @@ class _AuthCardState extends State<AuthCard> {
   @override
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.of(context).size;
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
       elevation: 8,
@@ -188,11 +192,14 @@ class _AuthCardState extends State<AuthCard> {
                             return null;
                           }
                         : null,
+                    onSaved: (value) {
+                      if(value != null) _authData["password"] = value;
+                    },
                   ),
                 SizedBox(height: 20),
                 if (isLoading) CircularProgressIndicator(),
                 ElevatedButton(
-                  onPressed: _submit,
+                  onPressed: () => _submit(authProvider),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
