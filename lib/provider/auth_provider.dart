@@ -10,7 +10,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> signUp(String email, String password) async {
     print("$email, $password");
-    var url = "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyDySR0VXlXqsUaQLTgAm6zO5t2CIO3PrLk";
+    var url = "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=";
     final response = await http.post(Uri.parse(url), body: json.encode( {
       "email": email,
       "password": password,
