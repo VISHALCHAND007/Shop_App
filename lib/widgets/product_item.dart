@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/provider/auth_provider_firebase.dart';
 import 'package:shop_app/provider/cart_provider.dart';
 import 'package:shop_app/provider/product.dart';
 
@@ -21,6 +22,7 @@ class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final product = Provider.of<Product>(context, listen: false);
+    final authProvider = Provider.of<AuthProviderFirebase>(context, listen: false);
     final cart = Provider.of<CartProvider>(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
@@ -32,7 +34,7 @@ class ProductItem extends StatelessWidget {
             builder: (ctx, prod, child) => IconButton(
               onPressed: () async {
                 try {
-                  await prod.toggleFavourite();
+                  await prod.toggleFavourite(await authProvider.getToken());
                 } catch (error) {
                   scaffoldMessenger.showSnackBar(
                     SnackBar(

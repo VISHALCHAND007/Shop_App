@@ -1,7 +1,10 @@
 import 'dart:math';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '/provider/auth_provider.dart';
+
+import '/provider/auth_provider_firebase.dart';
 
 enum AuthMode { signup, login }
 
@@ -61,18 +64,21 @@ class AuthScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: Text(
-                          "Shopify",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).textTheme.titleLarge?.color,
-                            fontSize: 30,
-                            fontFamily: "Anton",
-                            fontWeight: FontWeight.normal,
+                        child: ListTile(
+                          title: Text(
+                            "Shopify",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).textTheme.titleLarge?.color,
+                              fontSize: 30,
+                              fontFamily: "Anton",
+                              fontWeight: FontWeight.normal,
+                            ),
                           ),
-                        ),
+                          leading: Icon(Icons.shopping_cart_rounded, size: 40,),
+                        )
                       ),
                     ),
                   ),
@@ -103,8 +109,30 @@ class _AuthCardState extends State<AuthCard> {
   final Map<String, String> _authData = {"email": "", "password": ""};
   var isLoading = false;
   final _passwordController = TextEditingController();
+  bool _passVisibility = true;
+  bool _confirmPassVisibility = true;
 
-  void _submit(AuthProvider authProvider) async {
+  void _showErrorDialog(String? message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("Error occurred"),
+        content: Text(
+          message != null && message.isNotEmpty
+              ? message
+              : "Something went wrong.",
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text("Okay"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _submit(AuthProviderFirebase authProvider) async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -112,12 +140,20 @@ class _AuthCardState extends State<AuthCard> {
     setState(() {
       isLoading = true;
     });
-    if (_authMode == AuthMode.login) {
-      // login process
-    } else {
-      //sign up process
-      await authProvider.signUp(_authData["email"]!, _authData["password"]!);
+    try {
+      if (_authMode == AuthMode.login) {
+        // login process
+        await authProvider.signIn(_authData["email"]!, _passwordController.text);
+      } else {
+        //sign up process
+        await authProvider.signUp(_authData["email"]!, _authData["password"]!);
+      }
+    } on FirebaseAuthException catch (error) {
+      _showErrorDialog(error.message);
+    } catch (error) {
+      _showErrorDialog("Something went wrong.");
     }
+
     setState(() {
       isLoading = false;
     });
@@ -138,7 +174,10 @@ class _AuthCardState extends State<AuthCard> {
   @override
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.of(context).size;
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProviderFirebase>(
+      context,
+      listen: false,
+    );
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
@@ -153,7 +192,10 @@ class _AuthCardState extends State<AuthCard> {
             child: Column(
               children: [
                 TextFormField(
-                  decoration: InputDecoration(labelText: "Email"),
+                  decoration: InputDecoration(
+                    labelText: "Email",
+                    suffixIcon: Icon(Icons.email),
+                  ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null ||
@@ -168,8 +210,21 @@ class _AuthCardState extends State<AuthCard> {
                   },
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: "Password"),
-                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: "Password",
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _passVisibility = !_passVisibility;
+                        });
+                      },
+                      icon: _passVisibility
+                          ? Icon(Icons.visibility_off)
+                          : Icon(Icons.visibility),
+                    ),
+                  ),
+                  obscureText: _passVisibility,
+
                   controller: _passwordController,
                   validator: (value) {
                     if (value == null || value.isEmpty || value.length < 5) {
@@ -181,8 +236,20 @@ class _AuthCardState extends State<AuthCard> {
                 if (_authMode == AuthMode.signup)
                   TextFormField(
                     enabled: _authMode == AuthMode.signup,
-                    obscureText: true,
-                    decoration: InputDecoration(labelText: "Confirm password"),
+                    obscureText: _confirmPassVisibility,
+                    decoration: InputDecoration(
+                      labelText: "Confirm password",
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _confirmPassVisibility = !_confirmPassVisibility;
+                          });
+                        },
+                        icon: _confirmPassVisibility
+                            ? Icon(Icons.visibility_off)
+                            : Icon(Icons.visibility),
+                      ),
+                    ),
                     validator: _authMode == AuthMode.signup
                         ? (value) {
                             if (value == null ||
@@ -193,11 +260,11 @@ class _AuthCardState extends State<AuthCard> {
                           }
                         : null,
                     onSaved: (value) {
-                      if(value != null) _authData["password"] = value;
+                      if (value != null) _authData["password"] = value;
                     },
                   ),
                 SizedBox(height: 20),
-                if (isLoading) CircularProgressIndicator(),
+                if (isLoading) CircularProgressIndicator(color: Colors.grey, padding: const EdgeInsets.all(2),),
                 ElevatedButton(
                   onPressed: () => _submit(authProvider),
                   style: ElevatedButton.styleFrom(
@@ -218,9 +285,14 @@ class _AuthCardState extends State<AuthCard> {
                 TextButton(
                   onPressed: _switchAuthMode,
                   style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).textTheme.titleMedium?.color,
-                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 30),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap
+                    foregroundColor: Theme.of(
+                      context,
+                    ).textTheme.titleMedium?.color,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 4,
+                      horizontal: 30,
+                    ),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   child: Text(
                     _authMode == AuthMode.login ? "SIGN UP" : "LOGIN",

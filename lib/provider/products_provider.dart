@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shop_app/models/http_exception.dart';
+import 'package:shop_app/provider/auth_provider_firebase.dart';
 
 import '../models/temp_product.dart';
 import 'product.dart';
@@ -11,11 +12,15 @@ class ProductsProvider with ChangeNotifier {
   static const baseUrl = "https://shop-app-a8b3b-default-rtdb.firebaseio.com/";
   static const baseUrlUpdated =
       "https://shop-app-a8b3b-default-rtdb.firebaseio.com/products.json";
-  List<Product> _products = [];
+  List<Product> products = [];
+  final AuthProviderFirebase authProvider;
+
+  ProductsProvider({required this.authProvider});
 
   Future<void> fetchAndSaveProducts() async {
+    // final token = await authProvider.getToken();
     try {
-      final response = await http.get(Uri.parse(baseUrlUpdated));
+      final response = await http.get(Uri.parse("$baseUrlUpdated?auth=${await authProvider.getToken()}"));
       final List<Product> loadedProducts = [];
       if(json.decode(response.body) == null) return;
 
@@ -32,7 +37,7 @@ class ProductsProvider with ChangeNotifier {
           ),
         );
       });
-      _products = loadedProducts;
+      products = loadedProducts;
       notifyListeners();
     } catch (error) {
       rethrow;
@@ -40,21 +45,21 @@ class ProductsProvider with ChangeNotifier {
   }
 
   List<Product> get getProducts {
-    return [..._products];
+    return [...products];
   }
 
   List<Product> get getFavourites {
-    return _products.where((product) => product.isFavourite).toList();
+    return products.where((product) => product.isFavourite).toList();
   }
 
   Product findByInd(String productId) {
-    return _products.firstWhere((product) => product.id == productId);
+    return products.firstWhere((product) => product.id == productId);
   }
 
   Future<void> addProduct(TempProduct product) async {
     try {
       final response = await http.post(
-        Uri.parse(baseUrlUpdated),
+        Uri.parse("$baseUrlUpdated?auth=${await authProvider.getToken()}"),
         body: json.encode({
           "title": product.title,
           "description": product.description,
@@ -70,7 +75,7 @@ class ProductsProvider with ChangeNotifier {
         price: product.price,
         imageUrl: product.imageUrl,
       );
-      _products.add(newProduct);
+      products.add(newProduct);
       // do add product
       notifyListeners();
     } catch (error) {
@@ -80,7 +85,7 @@ class ProductsProvider with ChangeNotifier {
   }
 
   Future<void> updateProduct(TempProduct product, String productId) async {
-    final updateUrl = "${baseUrl}products/$productId.json";
+    final updateUrl = "${baseUrl}products/$productId.json?auth=${await authProvider.getToken()}";
     var updatedProduct = Product(
       id: productId,
       title: product.title,
@@ -89,7 +94,7 @@ class ProductsProvider with ChangeNotifier {
       imageUrl: product.imageUrl,
       isFavourite: product.isFavourite,
     );
-    final oldProdInd = _products.indexWhere((prod) => prod.id == productId);
+    final oldProdInd = products.indexWhere((prod) => prod.id == productId);
     if (oldProdInd >= 0) {
       await http.patch(
         Uri.parse(updateUrl),
@@ -100,25 +105,25 @@ class ProductsProvider with ChangeNotifier {
           "imageUrl": updatedProduct.imageUrl,
         }),
       );
-      _products[oldProdInd] = updatedProduct;
+      products[oldProdInd] = updatedProduct;
     } else {
-      print("...");
+      // print("...");
     }
     notifyListeners();
   }
 
   Future<void> deleteProd(String productId) async {
-    final updateUrl = "${baseUrl}products/$productId.json";
-    final productInd = _products.indexWhere((prod) => prod.id == productId);
-    Product? existingProduct = _products[productInd];
+    final updateUrl = "${baseUrl}products/$productId.json?auth=${await authProvider.getToken()}";
+    final productInd = products.indexWhere((prod) => prod.id == productId);
+    Product? existingProduct = products[productInd];
 
     if (productInd >= 0) {
-      _products.removeAt(productInd);
+      products.removeAt(productInd);
       notifyListeners();
       try {
         final response = await http.delete(Uri.parse(updateUrl));
         if (response.statusCode >= 400) {
-          _products.insert(productInd, existingProduct);
+          products.insert(productInd, existingProduct);
           notifyListeners();
           throw HttpException(message: "Deletion Error");
         }

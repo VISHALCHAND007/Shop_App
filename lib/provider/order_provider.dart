@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
+import 'package:shop_app/provider/auth_provider_firebase.dart';
 import '/provider/cart_provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -19,6 +20,10 @@ class OrderItem {
 }
 
 class OrderProvider with ChangeNotifier {
+  final AuthProviderFirebase authProviderFirebase;
+
+  OrderProvider({required this.authProviderFirebase});
+
   List<OrderItem> _orders = [];
   static const url =
       "https://shop-app-a8b3b-default-rtdb.firebaseio.com/orders.json";
@@ -31,7 +36,7 @@ class OrderProvider with ChangeNotifier {
     final timestamp = DateTime.now();
     try {
       final response = await http.post(
-        Uri.parse(url),
+        Uri.parse("$url?auth=${await authProviderFirebase.getToken()}"),
         body: json.encode({
           "amount": amount,
           "order_date": timestamp.toIso8601String(),
@@ -65,7 +70,7 @@ class OrderProvider with ChangeNotifier {
 
   Future<void> fetchAndSetOrders() async {
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse("$url?auth=${await authProviderFirebase.getToken()}"));
       List<OrderItem> loadedItems = [];
 
       if (json.decode(response.body) == null) {
