@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:shop_app/provider/products_provider.dart';
 import 'package:shop_app/screens/edit_product_screen.dart';
 import 'package:shop_app/widgets/custom_drawer.dart';
-import 'package:shop_app/widgets/not_found.dart';
 
 class UserProductsScreen extends StatefulWidget {
   static final routeName = "/user-products";
@@ -16,32 +15,44 @@ class UserProductsScreen extends StatefulWidget {
 
 class _UserProductsScreenState extends State<UserProductsScreen> {
   Future<void> _refreshProducts(BuildContext context) async {
-    await Provider.of<ProductsProvider>(context, listen: false).fetchAndSaveProducts();
+    await Provider.of<ProductsProvider>(
+      context,
+      listen: false,
+    ).fetchAndSaveProducts(true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final products = Provider.of<ProductsProvider>(context).getProducts;
     return Scaffold(
-      appBar: AppBar(title: Text("Your Products")),
+      appBar: AppBar(title: Text("Manage Products")),
       drawer: Drawer(child: CustomDrawer()),
-      body: products.isNotEmpty
-          ? RefreshIndicator(
-              onRefresh: () => _refreshProducts(context),
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: ListView.builder(
-                  itemBuilder: (ctx, ind) => ProductItem(
-                    productId: products[ind].id,
-                    price: products[ind].price.toString(),
-                    title: products[ind].title,
-                    imageUrl: products[ind].imageUrl,
+      body: FutureBuilder(
+        future: _refreshProducts(context),
+        builder: (ctx, snapshot) =>
+            (snapshot.connectionState == ConnectionState.waiting)
+            ? Center(child: CircularProgressIndicator())
+            // : products.isNotEmpty
+            // ?
+            : RefreshIndicator(
+                onRefresh: () => _refreshProducts(context),
+                child: Consumer<ProductsProvider>(
+                  builder:(ctx, productProvider, _) =>  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: ListView.builder(
+                      itemBuilder: (ctx, ind) => ProductItem(
+                        productId: productProvider.products[ind].id,
+                        price: productProvider.products[ind].price.toString(),
+                        title: productProvider.products[ind].title,
+                        imageUrl: productProvider.products[ind].imageUrl,
+                      ),
+                      itemCount: productProvider.products.length,
+                    ),
                   ),
-                  itemCount: products.length,
                 ),
-              ),
-            )
-          : NotFound(icon: Icons.not_interested_sharp, title: "Not found!"),
+              )
+            // : NotFound(icon: Icons.not_interested_sharp, title: "Not found!"),
+      ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).pushNamed(EditProductScreen.routeName);

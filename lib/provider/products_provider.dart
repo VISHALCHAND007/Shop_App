@@ -17,14 +17,22 @@ class ProductsProvider with ChangeNotifier {
 
   ProductsProvider({required this.authProvider});
 
-  Future<void> fetchAndSaveProducts() async {
-    // final token = await authProvider.getToken();
+  Future<void> fetchAndSaveProducts([bool filterProducts = false]) async {
+    final filterString = filterProducts ? '&orderBy="creatorId"&equalTo="${authProvider.userId}"' : '';
+    final token = await authProvider.getToken();
+    final userId = authProvider.userId;
     try {
-      final response = await http.get(Uri.parse("$baseUrlUpdated?auth=${await authProvider.getToken()}"));
+      final response = await http.get(Uri.parse("$baseUrlUpdated?auth=$token$filterString"));
       final List<Product> loadedProducts = [];
-      if(json.decode(response.body) == null) return;
+      if (json.decode(response.body) == null) return;
+      final favResponse = await http.get(
+        Uri.parse(
+          "https://shop-app-a8b3b-default-rtdb.firebaseio.com/userFavourites/$userId.json?auth=$token",
+        ),
+      );
 
       final decodedItems = json.decode(response.body) as Map<String, dynamic>;
+      final favItems = jsonDecode(favResponse.body);
       decodedItems.forEach((productId, product) {
         loadedProducts.add(
           Product(
@@ -33,7 +41,8 @@ class ProductsProvider with ChangeNotifier {
             description: product["description"],
             price: product["price"],
             imageUrl: product["imageUrl"],
-            isFavourite: product["is_favourite"]
+            isFavourite: favItems == null ? false : favItems[productId] ??
+                false,
           ),
         );
       });
@@ -65,7 +74,8 @@ class ProductsProvider with ChangeNotifier {
           "description": product.description,
           "price": product.price,
           "imageUrl": product.imageUrl,
-          "is_favourite": product.isFavourite,
+          "creatorId": authProvider.userId
+          // "is_favourite": product.isFavourite,
         }),
       );
       var newProduct = Product(
@@ -85,7 +95,9 @@ class ProductsProvider with ChangeNotifier {
   }
 
   Future<void> updateProduct(TempProduct product, String productId) async {
-    final updateUrl = "${baseUrl}products/$productId.json?auth=${await authProvider.getToken()}";
+    final updateUrl =
+        "${baseUrl}products/$productId.json?auth=${await authProvider
+        .getToken()}";
     var updatedProduct = Product(
       id: productId,
       title: product.title,
@@ -113,7 +125,9 @@ class ProductsProvider with ChangeNotifier {
   }
 
   Future<void> deleteProd(String productId) async {
-    final updateUrl = "${baseUrl}products/$productId.json?auth=${await authProvider.getToken()}";
+    final updateUrl =
+        "${baseUrl}products/$productId.json?auth=${await authProvider
+        .getToken()}";
     final productInd = products.indexWhere((prod) => prod.id == productId);
     Product? existingProduct = products[productInd];
 

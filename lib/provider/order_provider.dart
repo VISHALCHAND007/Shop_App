@@ -25,8 +25,8 @@ class OrderProvider with ChangeNotifier {
   OrderProvider({required this.authProviderFirebase});
 
   List<OrderItem> _orders = [];
-  static const url =
-      "https://shop-app-a8b3b-default-rtdb.firebaseio.com/orders.json";
+  final url =
+      "https://shop-app-a8b3b-default-rtdb.firebaseio.com/orders";
 
   List<OrderItem> get getOrders {
     return [..._orders];
@@ -36,7 +36,7 @@ class OrderProvider with ChangeNotifier {
     final timestamp = DateTime.now();
     try {
       final response = await http.post(
-        Uri.parse("$url?auth=${await authProviderFirebase.getToken()}"),
+        Uri.parse("$url/${authProviderFirebase.userId}.json?auth=${await authProviderFirebase.getToken()}"),
         body: json.encode({
           "amount": amount,
           "order_date": timestamp.toIso8601String(),
@@ -70,7 +70,7 @@ class OrderProvider with ChangeNotifier {
 
   Future<void> fetchAndSetOrders() async {
     try {
-      final response = await http.get(Uri.parse("$url?auth=${await authProviderFirebase.getToken()}"));
+      final response = await http.get(Uri.parse("$url/${authProviderFirebase.userId}.json?auth=${await authProviderFirebase.getToken()}"));
       List<OrderItem> loadedItems = [];
 
       if (json.decode(response.body) == null) {

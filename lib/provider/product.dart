@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shop_app/models/http_exception.dart';
-class Product with ChangeNotifier{
+
+class Product with ChangeNotifier {
   final String id;
   final String title;
   final String description;
@@ -20,22 +21,24 @@ class Product with ChangeNotifier{
     this.isFavourite = false,
   });
 
-  Future<void> toggleFavourite(String? token) async {
-    final url = "https://shop-app-a8b3b-default-rtdb.firebaseio.com/products/$id.json?auth=$token";
+  Future<void> toggleFavourite(String? token, String? userId) async {
+    final url =
+        "https://shop-app-a8b3b-default-rtdb.firebaseio.com/userFavourites/$userId/$id.json?auth=$token";
     final oldState = isFavourite;
     try {
       isFavourite = !isFavourite;
       notifyListeners();
 
-      final response = await http.patch(Uri.parse(url), body: json.encode({
-        "is_favourite": isFavourite
-      }));
-      if(response.statusCode >= 400) {
+      final response = await http.put(
+        Uri.parse(url),
+        body: json.encode(isFavourite),
+      );
+      if (response.statusCode >= 400) {
         isFavourite = oldState;
         notifyListeners();
         throw HttpException(message: "Something went wrong.");
       }
-    } catch(error) {
+    } catch (error) {
       isFavourite = oldState;
       notifyListeners();
       rethrow;

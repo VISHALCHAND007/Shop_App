@@ -11,6 +11,10 @@ class AuthProviderFirebase with ChangeNotifier {
     return _auth.currentUser != null;
   }
 
+  String? get userId {
+    return _auth.currentUser?.uid;
+  }
+
   Future<String?> getToken() async{
     return await _auth.currentUser?.getIdToken();
   }

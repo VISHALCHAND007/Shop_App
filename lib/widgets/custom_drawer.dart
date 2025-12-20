@@ -55,10 +55,14 @@ class CustomDrawer extends StatelessWidget {
               mainAxisAlignment: .end,
               children: [
                 ListTile(
-                  onTap: () => Provider.of<AuthProviderFirebase>(
-                    context,
-                    listen: false,
-                  ).logout(),
+                  onTap: ()  {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pushNamed("/");
+                    Provider.of<AuthProviderFirebase>(
+                      context,
+                      listen: false,
+                    ).logout();
+                  },
                   tileColor: Colors.redAccent,
                   textColor: Colors.white,
                   iconColor: Colors.white,

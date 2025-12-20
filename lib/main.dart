@@ -60,7 +60,8 @@ class _MyAppState extends State<MyApp> {
               listen: false,
             ),
           ),
-          update: (ctx, authProvider, previousOrder) => OrderProvider(authProviderFirebase: authProvider),
+          update: (ctx, authProvider, previousOrder) =>
+              OrderProvider(authProviderFirebase: authProvider),
         ),
       ],
       child: Consumer<AuthProviderFirebase>(
