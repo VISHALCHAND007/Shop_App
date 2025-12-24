@@ -22,7 +22,10 @@ class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final product = Provider.of<Product>(context, listen: false);
-    final authProvider = Provider.of<AuthProviderFirebase>(context, listen: false);
+    final authProvider = Provider.of<AuthProviderFirebase>(
+      context,
+      listen: false,
+    );
     final cart = Provider.of<CartProvider>(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
@@ -34,7 +37,10 @@ class ProductItem extends StatelessWidget {
             builder: (ctx, prod, child) => IconButton(
               onPressed: () async {
                 try {
-                  await prod.toggleFavourite(await authProvider.getToken(), authProvider.userId);
+                  await prod.toggleFavourite(
+                    await authProvider.getToken(),
+                    authProvider.userId,
+                  );
                 } catch (error) {
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
@@ -66,7 +72,14 @@ class ProductItem extends StatelessWidget {
           onTap: () => Navigator.of(
             context,
           ).pushNamed(ProductDetailsScreen.routeName, arguments: product.id),
-          child: Image.network(product.imageUrl, fit: BoxFit.cover),
+          child: Hero(
+            tag: product.id,
+            child: FadeInImage(
+              placeholder: AssetImage("assets/images/product_item.png"),
+              image: NetworkImage(product.imageUrl),
+              fit: BoxFit.cover,
+            ),
+          ),
         ),
       ),
     );

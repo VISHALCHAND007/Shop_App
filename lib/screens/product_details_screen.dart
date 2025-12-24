@@ -10,7 +10,10 @@ class ProductDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final productId = ModalRoute.of(context)?.settings.arguments as String;
+    final productId = ModalRoute
+        .of(context)
+        ?.settings
+        .arguments as String;
     final product = Provider.of<ProductsProvider>(
       context,
       listen: false,
@@ -18,15 +21,26 @@ class ProductDetailsScreen extends StatelessWidget {
     final cart = Provider.of<CartProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(product.title)),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 300,
-              width: double.infinity,
-              child: Image.network(product.imageUrl, fit: BoxFit.cover),
+      // appBar: AppBar(title: Text(product.title)),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 300,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+                title: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black54
+                  ),
+                  child: Text(product.title, style: TextStyle(color: Colors.white),),
+                ),
+                background: Hero(
+                  tag: product.id,
+                  child: Image.network(product.imageUrl, fit: BoxFit.cover),
+                ),
             ),
+          ),
+          SliverList(delegate: SliverChildListDelegate([
             Container(
               margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
               decoration: BoxDecoration(
@@ -52,7 +66,10 @@ class ProductDetailsScreen extends StatelessWidget {
                     icon: Icon(
                       Icons.shopping_cart_outlined,
                       color: cart.getItems.containsKey(product.id)
-                          ? Theme.of(context).colorScheme.error
+                          ? Theme
+                          .of(context)
+                          .colorScheme
+                          .error
                           : null,
                     ),
                   ),
@@ -63,8 +80,11 @@ class ProductDetailsScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 5),
               child: Text(product.description, softWrap: true),
             ),
-          ],
-        ),
+            SizedBox(
+              height: 800,
+            )
+          ]))
+        ],
       ),
     );
   }
