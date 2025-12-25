@@ -10,6 +10,7 @@ import '../widgets/grid_item.dart';
 enum FilterOptions { favourite, all }
 
 class ProductOverviewScreen extends StatefulWidget {
+  static const routeName = "/product-overview";
   const ProductOverviewScreen({super.key});
 
   @override

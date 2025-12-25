@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/helper/custom_route.dart';
 import 'package:shop_app/provider/auth_provider_firebase.dart';
 import 'package:shop_app/screens/order_screen.dart';
 import 'package:shop_app/screens/user_products_screen.dart';
@@ -34,6 +35,12 @@ class CustomDrawer extends StatelessWidget {
                 buildListTile(Icons.bookmark_border_rounded, "Orders", () {
                   Navigator.of(context).pop();
                   Navigator.of(context).pushNamed(OrderScreen.routeName);
+                  // Navigator.of(context).push(
+                  //   CustomRoute(
+                  //     builder: (ctx) => OrderScreen(),
+                  //     settings: null,
+                  //   ),
+                  // );
                 }),
                 Container(
                   margin: const EdgeInsets.only(left: 60),
@@ -55,7 +62,7 @@ class CustomDrawer extends StatelessWidget {
               mainAxisAlignment: .end,
               children: [
                 ListTile(
-                  onTap: ()  {
+                  onTap: () {
                     Navigator.of(context).pop();
                     Navigator.of(context).pushNamed("/");
                     Provider.of<AuthProviderFirebase>(

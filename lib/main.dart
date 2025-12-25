@@ -1,20 +1,20 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/helper/custom_route.dart';
 import 'package:shop_app/provider/auth_provider_firebase.dart';
 import 'package:shop_app/screens/auth_screen.dart';
 import 'package:shop_app/screens/edit_product_screen.dart';
 import 'package:shop_app/screens/order_screen.dart';
 import 'package:shop_app/screens/user_products_screen.dart';
-import '../provider/order_provider.dart';
-import './provider/cart_provider.dart';
-import './screens/cart_screen.dart';
 
 import '/screens/product_details_screen.dart';
 import '/screens/product_overview_screen.dart';
-import 'provider/products_provider.dart';
-import 'package:firebase_core/firebase_core.dart';
+import '../provider/order_provider.dart';
+import './provider/cart_provider.dart';
+import './screens/cart_screen.dart';
 import 'firebase_options.dart';
+import 'provider/products_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -72,12 +72,17 @@ class _MyAppState extends State<MyApp> {
               fontFamily: "Lato",
               primarySwatch: Colors.lime,
               primaryColor: Colors.lightBlue,
+              pageTransitionsTheme: PageTransitionsTheme(
+                builders: {
+                  TargetPlatform.android: CustomPageTransitionBuilder(),
+                  TargetPlatform.iOS: CustomPageTransitionBuilder()
+                }
+              )
             ),
-            home: authProvider.isLoggedIn
-                ? ProductOverviewScreen()
-                : AuthScreen(),
             routes: {
-              // "/": (ctx) => ProductOverviewScreen(),
+              "/": (ctx) => authProvider.isLoggedIn
+                  ? ProductOverviewScreen()
+                  : AuthScreen(),
               ProductDetailsScreen.routeName: (ctx) => ProductDetailsScreen(),
               CartScreen.routeName: (ctx) => CartScreen(),
               OrderScreen.routeName: (ctx) => OrderScreen(),
